@@ -1,0 +1,685 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg0: #0a0c10;
+  --bg1: #10141a;
+  --bg2: #171c26;
+  --bg3: #1e2535;
+  --bg4: #252d42;
+  --border: rgba(99,120,180,0.18);
+  --border2: rgba(99,120,180,0.32);
+  --text1: #e8edf5;
+  --text2: #8fa0c0;
+  --text3: #5a6a88;
+  --up: #00d68f;
+  --dn: #ff4d6a;
+  --acc: #3d8bff;
+  --acc2: #7c6fff;
+  --warn: #f5a623;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --font-sans: 'IBM Plex Sans', sans-serif;
+}
+
+body { background: var(--bg0); color: var(--text1); font-family: var(--font-sans); font-size: 13px; }
+
+.dash { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; grid-template-rows: auto auto auto auto auto; gap: 8px; padding: 10px; min-height: 100vh; }
+
+.header { grid-column: 1/-1; display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg1); border: 0.5px solid var(--border); border-radius: 6px; }
+.header-left { display: flex; align-items: center; gap: 14px; }
+.logo { font-family: var(--font-mono); font-size: 15px; font-weight: 600; color: var(--acc); letter-spacing: 2px; }
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--up); animation: pulse 1.4s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+.live-label { font-family: var(--font-mono); font-size: 10px; color: var(--up); letter-spacing: 1px; }
+.clock { font-family: var(--font-mono); font-size: 13px; color: var(--text2); }
+.session-badge { background: rgba(61,139,255,0.15); border: 0.5px solid rgba(61,139,255,0.4); color: var(--acc); font-size: 10px; padding: 3px 8px; border-radius: 3px; letter-spacing: 0.5px; }
+
+.card { background: var(--bg1); border: 0.5px solid var(--border); border-radius: 6px; padding: 10px 12px; }
+.card-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; color: var(--text3); text-transform: uppercase; margin-bottom: 4px; }
+
+.indices-row { grid-column: 1/-1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+
+.index-card { background: var(--bg1); border: 0.5px solid var(--border); border-radius: 6px; padding: 12px; position: relative; overflow: hidden; cursor: pointer; transition: border-color 0.2s; }
+.index-card:hover { border-color: var(--border2); }
+.index-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; }
+.index-card.up::after { background: linear-gradient(90deg, transparent, var(--up), transparent); }
+.index-card.dn::after { background: linear-gradient(90deg, transparent, var(--dn), transparent); }
+.ix-ticker { font-family: var(--font-mono); font-size: 11px; color: var(--text3); margin-bottom: 2px; }
+.ix-name { font-size: 11px; color: var(--text2); margin-bottom: 6px; }
+.ix-price { font-family: var(--font-mono); font-size: 22px; font-weight: 600; color: var(--text1); line-height: 1; margin-bottom: 4px; transition: color 0.3s; }
+.ix-price.flash-up { color: var(--up); }
+.ix-price.flash-dn { color: var(--dn); }
+.ix-change { font-family: var(--font-mono); font-size: 12px; }
+.ix-mini-chart { margin-top: 8px; }
+.ix-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 8px; }
+.ix-stat { font-size: 10px; color: var(--text3); }
+.ix-stat span { color: var(--text2); font-family: var(--font-mono); }
+
+.chart-area { grid-column: 1/3; background: var(--bg1); border: 0.5px solid var(--border); border-radius: 6px; padding: 10px 12px; }
+.chart-area.wide { grid-column: 1/4; }
+.chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.chart-tabs { display: flex; gap: 4px; }
+.chart-tab { font-family: var(--font-mono); font-size: 10px; padding: 3px 8px; border-radius: 3px; cursor: pointer; border: 0.5px solid var(--border); color: var(--text3); background: transparent; transition: all 0.15s; }
+.chart-tab.active { background: rgba(61,139,255,0.2); border-color: var(--acc); color: var(--acc); }
+.chart-tab:hover:not(.active) { color: var(--text2); border-color: var(--border2); }
+
+.indicators-panel { grid-column: 3/5; background: var(--bg1); border: 0.5px solid var(--border); border-radius: 6px; padding: 10px 12px; }
+.ind-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+.ind-card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: 4px; padding: 8px 10px; }
+.ind-name { font-size: 10px; color: var(--text3); margin-bottom: 3px; font-family: var(--font-mono); }
+.ind-val { font-family: var(--font-mono); font-size: 15px; font-weight: 600; }
+.ind-sig { font-size: 9px; letter-spacing: 1px; margin-top: 2px; padding: 2px 6px; border-radius: 2px; display: inline-block; }
+.sig-buy { background: rgba(0,214,143,0.15); color: var(--up); }
+.sig-sell { background: rgba(255,77,106,0.15); color: var(--dn); }
+.sig-neutral { background: rgba(245,166,35,0.15); color: var(--warn); }
+.sig-overbought { background: rgba(255,77,106,0.15); color: var(--dn); }
+.sig-oversold { background: rgba(0,214,143,0.15); color: var(--up); }
+
+.news-panel { grid-column: 4/5; background: var(--bg1); border: 0.5px solid var(--border); border-radius: 6px; padding: 10px 12px; display: flex; flex-direction: column; gap: 0; }
+.news-panel.wide { grid-column: 1/-1; }
+.news-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.refresh-btn { font-family: var(--font-mono); font-size: 9px; padding: 3px 8px; border-radius: 3px; cursor: pointer; border: 0.5px solid var(--border); color: var(--acc); background: rgba(61,139,255,0.1); transition: all 0.15s; display: flex; align-items: center; gap: 4px; }
+.refresh-btn:hover { background: rgba(61,139,255,0.2); }
+.refresh-btn.loading { opacity: 0.6; pointer-events: none; }
+.news-item { padding: 8px 0; border-bottom: 0.5px solid var(--border); cursor: pointer; transition: background 0.15s; }
+.news-item:last-child { border-bottom: none; }
+.news-item:hover { background: var(--bg2); margin: 0 -12px; padding: 8px 12px; }
+.news-impact { font-size: 9px; letter-spacing: 1px; padding: 2px 6px; border-radius: 2px; display: inline-block; margin-bottom: 4px; font-family: var(--font-mono); }
+.impact-high { background: rgba(255,77,106,0.15); color: var(--dn); border: 0.5px solid rgba(255,77,106,0.3); }
+.impact-med { background: rgba(245,166,35,0.15); color: var(--warn); border: 0.5px solid rgba(245,166,35,0.3); }
+.impact-low { background: rgba(99,120,180,0.15); color: var(--text2); border: 0.5px solid var(--border); }
+.news-headline { font-size: 12px; color: var(--text1); line-height: 1.4; margin-bottom: 3px; }
+.news-meta { font-size: 10px; color: var(--text3); font-family: var(--font-mono); display: flex; gap: 8px; }
+.news-loading { display: flex; align-items: center; gap: 8px; padding: 20px 0; color: var(--text3); font-family: var(--font-mono); font-size: 11px; }
+.spinner { width: 14px; height: 14px; border: 1.5px solid var(--border2); border-top-color: var(--acc); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg);} }
+
+.bottom-row { grid-column: 1/-1; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.ticker-tape { grid-column: 1/-1; background: var(--bg1); border: 0.5px solid var(--border); border-radius: 6px; padding: 6px 12px; overflow: hidden; white-space: nowrap; }
+.tape-inner { display: inline-block; animation: scroll-left 40s linear infinite; }
+.tape-item { display: inline-block; margin-right: 32px; font-family: var(--font-mono); font-size: 11px; }
+.tape-sym { color: var(--text2); margin-right: 4px; }
+@keyframes scroll-left { from{transform:translateX(0);} to{transform:translateX(-50%);} }
+
+.up-color { color: var(--up); }
+.dn-color { color: var(--dn); }
+.acc-color { color: var(--acc); }
+.warn-color { color: var(--warn); }
+
+.vol-bar-wrap { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+.vol-bar-bg { flex: 1; height: 3px; background: var(--bg3); border-radius: 2px; }
+.vol-bar-fill { height: 3px; border-radius: 2px; background: var(--acc); transition: width 1s; }
+
+.market-breadth { display: flex; gap: 4px; margin-top: 6px; height: 6px; border-radius: 3px; overflow: hidden; }
+.breadth-up { background: var(--up); flex: 1; border-radius: 3px 0 0 3px; }
+.breadth-flat { background: var(--text3); }
+.breadth-dn { background: var(--dn); flex: 1; border-radius: 0 3px 3px 0; }
+
+.section-title { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px; color: var(--text3); text-transform: uppercase; }
+
+.fear-gauge { text-align: center; padding: 8px 0; }
+.fear-val { font-family: var(--font-mono); font-size: 28px; font-weight: 600; }
+.fear-label { font-size: 10px; color: var(--text3); margin-top: 4px; }
+.fear-bar { height: 6px; border-radius: 3px; margin: 8px 0 4px; background: linear-gradient(90deg, var(--up), var(--warn), var(--dn)); position: relative; }
+.fear-cursor { width: 2px; height: 14px; background: white; border-radius: 1px; position: absolute; top: -4px; transition: left 1s; }
+
+.heat-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; margin-top: 8px; }
+.heat-cell { border-radius: 3px; padding: 5px 4px; text-align: center; font-family: var(--font-mono); font-size: 9px; }
+.heat-cell-name { font-size: 8px; color: rgba(255,255,255,0.7); margin-bottom: 2px; }
+.heat-cell-val { font-size: 10px; font-weight: 600; }
+
+canvas { display: block; }
+</style>
+
+<div class="dash" id="dash">
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">NEXUS TERMINAL</div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <div class="live-dot"></div>
+      <div class="live-label">LIVE</div>
+    </div>
+    <div class="session-badge" id="session-badge">NYSE OPEN</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);">MARKETS: <span style="color:var(--up)">NY</span> · <span style="color:var(--up)">TSX</span> · <span style="color:var(--text3)">LON</span></div>
+    <div class="clock" id="clock">--:--:-- ET</div>
+  </div>
+</div>
+
+<div class="ticker-tape">
+  <div class="tape-inner" id="tape-inner">Loading market data...</div>
+</div>
+
+<div class="indices-row" id="indices-row">
+</div>
+
+<div class="chart-area" style="grid-column:1/3;">
+  <div class="chart-header">
+    <div>
+      <div class="section-title" style="margin-bottom:2px;">Intraday Chart</div>
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--text2);" id="chart-sym-label">S&P 500</div>
+    </div>
+    <div class="chart-tabs" id="chart-tabs">
+      <button class="chart-tab active" data-sym="SPX">SPX</button>
+      <button class="chart-tab" data-sym="NDX">NDX</button>
+      <button class="chart-tab" data-sym="TSX">TSX</button>
+      <button class="chart-tab" data-sym="DJI">DJI</button>
+    </div>
+  </div>
+  <div style="position:relative;height:180px;">
+    <canvas id="priceChart" role="img" aria-label="Intraday price chart for selected index"></canvas>
+  </div>
+  <div style="display:flex;justify-content:space-between;margin-top:8px;">
+    <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);">9:30</div>
+    <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);">12:00</div>
+    <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);">16:00</div>
+  </div>
+</div>
+
+<div class="card" style="grid-column:3/4;">
+  <div class="section-title" style="margin-bottom:8px;">Volume & Breadth</div>
+  <div style="margin-bottom:10px;">
+    <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">SPX Volume vs Avg</div>
+    <div class="vol-bar-wrap">
+      <div class="vol-bar-bg"><div class="vol-bar-fill" id="vol-bar" style="width:72%"></div></div>
+      <span style="font-family:var(--font-mono);font-size:11px;color:var(--acc);" id="vol-pct">72%</span>
+    </div>
+    <div style="font-size:10px;color:var(--text3);margin-top:2px;">Volume: <span id="vol-num" style="color:var(--text2);font-family:var(--font-mono);">1.84B</span></div>
+  </div>
+  <div style="margin-bottom:10px;">
+    <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">NYSE Advance/Decline</div>
+    <div class="market-breadth">
+      <div class="breadth-up" id="breadth-up" style="flex:1.6;"></div>
+      <div class="breadth-flat" style="width:20px;"></div>
+      <div class="breadth-dn" id="breadth-dn" style="flex:0.8;"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:4px;font-family:var(--font-mono);font-size:10px;">
+      <span class="up-color" id="adv-num">1,847 ▲</span>
+      <span class="dn-color" id="dec-num">946 ▼</span>
+    </div>
+  </div>
+  <div style="margin-bottom:10px;">
+    <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">52-Wk Highs / Lows</div>
+    <div style="font-family:var(--font-mono);font-size:11px;display:flex;gap:16px;">
+      <span class="up-color" id="wk-highs">↑ 142</span>
+      <span class="dn-color" id="wk-lows">↓ 38</span>
+    </div>
+  </div>
+  <div>
+    <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">Sector Heatmap (% chg)</div>
+    <div class="heat-grid" id="heat-grid"></div>
+  </div>
+</div>
+
+<div class="indicators-panel" style="grid-column:4/5;">
+  <div class="section-title" style="margin-bottom:2px;">Technical Signals</div>
+  <div style="font-size:10px;color:var(--text3);margin-bottom:4px;" id="ind-sym-label">S&P 500 · 5-min</div>
+  <div class="ind-grid" id="ind-grid"></div>
+  <div style="margin-top:10px;">
+    <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">Overall Signal</div>
+    <div id="overall-sig" style="padding:6px 10px;border-radius:4px;font-family:var(--font-mono);font-size:11px;text-align:center;background:rgba(0,214,143,0.1);color:var(--up);border:0.5px solid rgba(0,214,143,0.3);">BULLISH BIAS</div>
+  </div>
+  <div style="margin-top:10px;">
+    <div class="fear-gauge">
+      <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">VIX (Fear Index)</div>
+      <div class="fear-val" id="vix-val" style="color:var(--warn);">18.4</div>
+      <div class="fear-bar"><div class="fear-cursor" id="fear-cursor" style="left:30%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:9px;font-family:var(--font-mono);">
+        <span class="up-color">GREED</span><span class="warn-color">NEUTRAL</span><span class="dn-color">FEAR</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="news-panel" style="grid-column:1/3;grid-row:5;">
+  <div class="news-header">
+    <div class="section-title">Market Intelligence</div>
+    <button class="refresh-btn" id="refresh-news-btn" onclick="fetchNews()">
+      <span id="refresh-icon">↻</span> REFRESH
+    </button>
+  </div>
+  <div id="news-container">
+    <div class="news-loading"><div class="spinner"></div>Loading market intelligence...</div>
+  </div>
+</div>
+
+<div class="card" style="grid-column:3/4;grid-row:5;">
+  <div class="section-title" style="margin-bottom:8px;">Key Levels (SPX)</div>
+  <div id="key-levels"></div>
+</div>
+
+<div class="card" style="grid-column:4/5;grid-row:5;">
+  <div class="section-title" style="margin-bottom:8px;">Economic Calendar</div>
+  <div id="econ-cal"></div>
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const INDICES = {
+  SPX: { name:'S&P 500', base:5847.2, vol:0.0008 },
+  NDX: { name:'NASDAQ 100', base:20543.8, vol:0.0012 },
+  TSX: { name:'TSX Composite', base:25112.4, vol:0.0009 },
+  DJI: { name:'Dow Jones', base:42318.7, vol:0.0007 }
+};
+
+const SECTORS = [
+  {name:'Tech',base:2.1},{name:'Fin',base:0.8},{name:'Hlth',base:-0.3},
+  {name:'Egy',base:1.4},{name:'Con',base:-0.6},{name:'Ind',base:0.5},
+  {name:'Mat',base:0.9},{name:'Util',base:-0.2},{name:'RE',base:-1.1},{name:'Tel',base:0.3}
+];
+
+const INDICATORS = [
+  {id:'rsi',name:'RSI (14)',fmt:v=>v.toFixed(1),sig:v=>v>70?'OVERBOUGHT':v<30?'OVERSOLD':v>55?'BUY':'SELL'},
+  {id:'macd',name:'MACD',fmt:v=>(v>=0?'+':'')+v.toFixed(2),sig:v=>v>0?'BUY':'SELL'},
+  {id:'ema20',name:'EMA20 Cross',fmt:v=>(v>=0?'+':'')+v.toFixed(2)+'%',sig:v=>v>0?'BUY':'SELL'},
+  {id:'bb',name:'Bollinger %B',fmt:v=>v.toFixed(2),sig:v=>v>1?'OVERBOUGHT':v<0?'OVERSOLD':v>0.5?'NEUTRAL':'NEUTRAL'},
+  {id:'stoch',name:'Stoch RSI',fmt:v=>v.toFixed(1),sig:v=>v>80?'OVERBOUGHT':v<20?'OVERSOLD':v>50?'BUY':'SELL'},
+  {id:'adx',name:'ADX Trend',fmt:v=>v.toFixed(1),sig:v=>v>25?'BUY':'NEUTRAL'}
+];
+
+let prices = {};
+let chartData = { SPX:[], NDX:[], TSX:[], DJI:[] };
+let currentSym = 'SPX';
+let priceChart = null;
+let lastPrices = {};
+
+function randNorm() {
+  let u=0,v=0;
+  while(u===0)u=Math.random();
+  while(v===0)v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+
+function initPrices() {
+  for(const sym in INDICES) {
+    const cfg = INDICES[sym];
+    prices[sym] = cfg.base;
+    lastPrices[sym] = cfg.base;
+    chartData[sym] = generateHistory(cfg.base, cfg.vol);
+  }
+}
+
+function generateHistory(base, vol) {
+  const pts = [];
+  let price = base * 0.985;
+  for(let i=0;i<78;i++) {
+    price = price * (1 + randNorm()*vol + 0.00015);
+    pts.push(parseFloat(price.toFixed(2)));
+  }
+  return pts;
+}
+
+function tickPrices() {
+  for(const sym in INDICES) {
+    const cfg = INDICES[sym];
+    const move = randNorm() * cfg.vol;
+    prices[sym] = prices[sym] * (1 + move);
+    prices[sym] = parseFloat(prices[sym].toFixed(2));
+    chartData[sym].push(prices[sym]);
+    if(chartData[sym].length > 120) chartData[sym].shift();
+  }
+  renderIndices();
+  updateChart();
+  updateIndicators();
+}
+
+function pctChange(sym) {
+  return ((prices[sym] - INDICES[sym].base) / INDICES[sym].base * 100);
+}
+
+function fmtPrice(p) {
+  return p.toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+function renderIndices() {
+  const row = document.getElementById('indices-row');
+  row.innerHTML = '';
+  for(const sym in INDICES) {
+    const cfg = INDICES[sym];
+    const price = prices[sym];
+    const pct = pctChange(sym);
+    const up = pct >= 0;
+    const prev = lastPrices[sym] || price;
+    const flash = price > prev ? 'flash-up' : price < prev ? 'flash-dn' : '';
+    lastPrices[sym] = price;
+    const high = Math.max(...chartData[sym].slice(-40));
+    const low = Math.min(...chartData[sym].slice(-40));
+    const card = document.createElement('div');
+    card.className = `index-card ${up?'up':'dn'}`;
+    card.onclick = () => { currentSym = sym; setChartTab(sym); updateChart(); };
+    card.innerHTML = `
+      <div class="ix-ticker">${sym}</div>
+      <div class="ix-name">${cfg.name}</div>
+      <div class="ix-price ${flash}" id="price-${sym}">${fmtPrice(price)}</div>
+      <div class="ix-change ${up?'up-color':'dn-color'}">${up?'▲':'▼'} ${Math.abs(pct).toFixed(2)}% (${up?'+':''}${(price-cfg.base).toFixed(2)})</div>
+      <div style="margin-top:8px;"><canvas id="spark-${sym}" width="200" height="36" role="img" aria-label="${sym} sparkline"></canvas></div>
+      <div class="ix-stats">
+        <div class="ix-stat">H: <span>${fmtPrice(high)}</span></div>
+        <div class="ix-stat">L: <span>${fmtPrice(low)}</span></div>
+      </div>
+    `;
+    row.appendChild(card);
+    setTimeout(()=>drawSparkline(sym), 10);
+    if(flash) setTimeout(()=>{ const el=document.getElementById('price-'+sym); if(el){el.classList.remove('flash-up','flash-dn');} }, 600);
+  }
+}
+
+function drawSparkline(sym) {
+  const canvas = document.getElementById('spark-'+sym);
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const data = chartData[sym].slice(-30);
+  const w = canvas.offsetWidth || 200;
+  const h = 36;
+  canvas.width = w; canvas.height = h;
+  ctx.clearRect(0,0,w,h);
+  const mn = Math.min(...data), mx = Math.max(...data);
+  const range = mx-mn || 1;
+  const up = pctChange(sym) >= 0;
+  const color = up ? '#00d68f' : '#ff4d6a';
+  ctx.beginPath();
+  data.forEach((v,i)=>{ const x=i/(data.length-1)*w, y=h-(v-mn)/range*(h-4)-2; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+  ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+  const grad = ctx.createLinearGradient(0,0,0,h);
+  grad.addColorStop(0, up?'rgba(0,214,143,0.25)':'rgba(255,77,106,0.25)');
+  grad.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.lineTo(w,h); ctx.lineTo(0,h); ctx.closePath();
+  ctx.fillStyle = grad; ctx.fill();
+}
+
+function setChartTab(sym) {
+  currentSym = sym;
+  document.querySelectorAll('.chart-tab').forEach(t=>{ t.classList.toggle('active', t.dataset.sym===sym); });
+  const names = {SPX:'S&P 500',NDX:'NASDAQ 100',TSX:'TSX Composite',DJI:'Dow Jones'};
+  document.getElementById('chart-sym-label').textContent = names[sym];
+  document.getElementById('ind-sym-label').textContent = names[sym]+' · 5-min';
+}
+
+function updateChart() {
+  const data = chartData[currentSym];
+  const up = pctChange(currentSym) >= 0;
+  const color = up ? '#00d68f' : '#ff4d6a';
+  if(!priceChart) return;
+  priceChart.data.datasets[0].data = data;
+  priceChart.data.datasets[0].borderColor = color;
+  priceChart.data.datasets[0].pointBackgroundColor = color;
+  priceChart.data.datasets[0].backgroundColor = (ctx) => {
+    const g = ctx.chart.ctx.createLinearGradient(0,0,0,180);
+    g.addColorStop(0, up?'rgba(0,214,143,0.2)':'rgba(255,77,106,0.2)');
+    g.addColorStop(1,'rgba(0,0,0,0)');
+    return g;
+  };
+  priceChart.data.labels = data.map((_,i)=>i);
+  priceChart.update('none');
+}
+
+function initChart() {
+  const ctx = document.getElementById('priceChart').getContext('2d');
+  priceChart = new Chart(ctx, {
+    type:'line',
+    data:{ labels:[], datasets:[{ data:[], borderWidth:1.5, pointRadius:0, fill:true, tension:0.3 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false, animation:false,
+      plugins:{ legend:{display:false}, tooltip:{ enabled:true, mode:'index', intersect:false,
+        callbacks:{ label: ctx => ' '+fmtPrice(ctx.parsed.y) },
+        backgroundColor:'rgba(16,20,26,0.95)', borderColor:'rgba(99,120,180,0.3)', borderWidth:1,
+        titleColor:'#8fa0c0', bodyColor:'#e8edf5', titleFont:{family:'IBM Plex Mono',size:10}, bodyFont:{family:'IBM Plex Mono',size:11}
+      }},
+      scales:{
+        x:{ display:false },
+        y:{ position:'right', grid:{ color:'rgba(99,120,180,0.1)', drawBorder:false },
+            ticks:{ color:'#5a6a88', font:{family:'IBM Plex Mono',size:9}, callback:v=>fmtPrice(v), maxTicksLimit:5 },
+            border:{ display:false }
+        }
+      }
+    }
+  });
+  updateChart();
+}
+
+let indValues = { rsi:58.2, macd:0.34, ema20:0.41, bb:0.62, stoch:64.1, adx:28.7 };
+
+function updateIndicators() {
+  const noise = { rsi:randNorm()*0.4, macd:randNorm()*0.05, ema20:randNorm()*0.03, bb:randNorm()*0.02, stoch:randNorm()*0.8, adx:randNorm()*0.3 };
+  for(const k in noise) { indValues[k] = parseFloat((indValues[k]+noise[k]).toFixed(3)); }
+  indValues.rsi = Math.max(20,Math.min(80,indValues.rsi));
+  indValues.stoch = Math.max(10,Math.min(90,indValues.stoch));
+  indValues.adx = Math.max(15,Math.min(50,indValues.adx));
+  indValues.bb = Math.max(-0.1,Math.min(1.1,indValues.bb));
+  renderIndicators();
+  updateVix();
+}
+
+function renderIndicators() {
+  const grid = document.getElementById('ind-grid');
+  grid.innerHTML = '';
+  let buys=0, sells=0;
+  INDICATORS.forEach(ind => {
+    const val = indValues[ind.id];
+    const sig = ind.sig(val);
+    const cls = sig==='BUY'?'sig-buy':sig==='SELL'?'sig-sell':sig==='OVERBOUGHT'?'sig-overbought':sig==='OVERSOLD'?'sig-oversold':'sig-neutral';
+    const color = sig==='BUY'||sig==='OVERSOLD'?'var(--up)':sig==='SELL'||sig==='OVERBOUGHT'?'var(--dn)':'var(--warn)';
+    if(sig==='BUY')buys++;if(sig==='SELL')sells++;
+    const div = document.createElement('div');
+    div.className = 'ind-card';
+    div.innerHTML = `<div class="ind-name">${ind.name}</div><div class="ind-val" style="color:${color}">${ind.fmt(val)}</div><div class="ind-sig ${cls}">${sig}</div>`;
+    grid.appendChild(div);
+  });
+  const oSig = document.getElementById('overall-sig');
+  if(buys>sells) { oSig.style.background='rgba(0,214,143,0.1)'; oSig.style.color='var(--up)'; oSig.style.borderColor='rgba(0,214,143,0.3)'; oSig.textContent='BULLISH BIAS'; }
+  else if(sells>buys) { oSig.style.background='rgba(255,77,106,0.1)'; oSig.style.color='var(--dn)'; oSig.style.borderColor='rgba(255,77,106,0.3)'; oSig.textContent='BEARISH BIAS'; }
+  else { oSig.style.background='rgba(245,166,35,0.1)'; oSig.style.color='var(--warn)'; oSig.style.borderColor='rgba(245,166,35,0.3)'; oSig.textContent='NEUTRAL / WAIT'; }
+}
+
+let vixVal = 18.4;
+function updateVix() {
+  vixVal += randNorm()*0.15;
+  vixVal = Math.max(12,Math.min(35,vixVal));
+  document.getElementById('vix-val').textContent = vixVal.toFixed(1);
+  const pct = (vixVal-12)/(35-12)*100;
+  document.getElementById('fear-cursor').style.left = pct+'%';
+  const el = document.getElementById('vix-val');
+  el.style.color = vixVal>25?'var(--dn)':vixVal>18?'var(--warn)':'var(--up)';
+}
+
+function renderSectors() {
+  const grid = document.getElementById('heat-grid');
+  grid.innerHTML = '';
+  const sects = SECTORS.map(s=>({...s, val: s.base+randNorm()*0.15}));
+  sects.forEach(s=>{
+    const color = s.val>1.5?'#004d32':s.val>0.5?'#003325':s.val>0?'#001f1a':s.val>-0.5?'#2d0008':s.val>-1.5?'#3d000e':'#520014';
+    const tc = Math.abs(s.val)>0.3?'rgba(255,255,255,0.9)':'rgba(255,255,255,0.6)';
+    const div = document.createElement('div');
+    div.className='heat-cell';
+    div.style.background=color;
+    div.innerHTML=`<div class="heat-cell-name" style="color:${tc}">${s.name}</div><div class="heat-cell-val" style="color:${tc}">${s.val>=0?'+':''}${s.val.toFixed(1)}%</div>`;
+    grid.appendChild(div);
+  });
+}
+
+function renderKeyLevels() {
+  const price = prices.SPX;
+  const levels = [
+    {label:'Resistance 3',val:price*1.018,type:'r'},
+    {label:'Resistance 2',val:price*1.011,type:'r'},
+    {label:'Resistance 1',val:price*1.004,type:'r'},
+    {label:'CURRENT',val:price,type:'c'},
+    {label:'Support 1',val:price*0.996,type:'s'},
+    {label:'Support 2',val:price*0.989,type:'s'},
+    {label:'Support 3',val:price*0.982,type:'s'},
+  ];
+  const el = document.getElementById('key-levels');
+  el.innerHTML = levels.map(l=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:0.5px solid var(--border);">
+      <span style="font-size:10px;color:${l.type==='r'?'var(--dn)':l.type==='s'?'var(--up)':'var(--acc)'}">${l.label}</span>
+      <span style="font-family:var(--font-mono);font-size:11px;color:${l.type==='c'?'var(--acc)':'var(--text2)'};">${fmtPrice(l.val)}</span>
+    </div>
+  `).join('');
+}
+
+function renderEconCalendar() {
+  const now = new Date();
+  const events = [
+    {time:'8:30 AM',name:'Initial Jobless Claims',impact:'HIGH',status:'due'},
+    {time:'10:00 AM',name:'Consumer Sentiment',impact:'MED',status:'due'},
+    {time:'11:30 AM',name:'2-Yr Note Auction',impact:'MED',status:'due'},
+    {time:'2:00 PM',name:'FOMC Minutes',impact:'HIGH',status:'upcoming'},
+    {time:'3:30 PM',name:'EIA Crude Inventories',impact:'MED',status:'upcoming'},
+  ];
+  document.getElementById('econ-cal').innerHTML = events.map(e=>`
+    <div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--border);">
+      <span style="font-family:var(--font-mono);font-size:9px;color:var(--text3);min-width:52px;margin-top:1px;">${e.time}</span>
+      <div>
+        <div style="font-size:11px;color:var(--text1);line-height:1.3;">${e.name}</div>
+        <span style="font-size:9px;padding:1px 5px;border-radius:2px;font-family:var(--font-mono);${e.impact==='HIGH'?'background:rgba(255,77,106,0.15);color:var(--dn)':'background:rgba(245,166,35,0.15);color:var(--warn)'}">${e.impact}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderTape() {
+  const tickers = [
+    {s:'AAPL',p:213.45,c:1.23},{s:'MSFT',p:441.2,c:0.87},{s:'NVDA',p:137.8,c:2.14},
+    {s:'AMZN',p:224.5,c:-0.34},{s:'GOOGL',p:192.3,c:0.56},{s:'META',p:631.2,c:1.89},
+    {s:'TSLA',p:287.4,c:-1.23},{s:'BRK.B',p:508.9,c:0.34},{s:'JPM',p:264.1,c:0.67},
+    {s:'RY.TO',p:143.2,c:0.45},{s:'TD.TO',p:81.3,c:-0.12},{s:'ENB.TO',p:55.8,c:0.89},
+    {s:'SHOP.TO',p:97.4,c:1.56},{s:'CNR.TO',p:152.1,c:0.23},{s:'GS',p:589.3,c:-0.45},
+    {s:'BAC',p:44.2,c:0.78},{s:'XOM',p:109.4,c:1.12},{s:'CVX',p:154.8,c:0.67},
+    {s:'AMD',p:127.3,c:-0.89},{s:'CRM',p:311.5,c:2.34}
+  ].map(t=>({...t,p:t.p*(1+randNorm()*0.002),c:t.c+randNorm()*0.1}));
+  
+  const inner = tickers.map(t=>`
+    <span class="tape-item">
+      <span class="tape-sym">${t.s}</span>
+      <span style="color:var(--text1)">${t.p.toFixed(2)}</span>
+      <span style="${t.c>=0?'color:var(--up)':'color:var(--dn)'}">${t.c>=0?'▲':'▼'}${Math.abs(t.c).toFixed(2)}%</span>
+    </span>
+  `).join('');
+  const el = document.getElementById('tape-inner');
+  el.innerHTML = inner+inner;
+}
+
+function updateBreadth() {
+  const adv = 1600+Math.floor(randNorm()*100);
+  const dec = 900+Math.floor(randNorm()*80);
+  document.getElementById('adv-num').textContent = adv.toLocaleString()+' ▲';
+  document.getElementById('dec-num').textContent = dec.toLocaleString()+' ▼';
+  const total = adv+dec+150;
+  document.getElementById('breadth-up').style.flex = adv/total*2;
+  document.getElementById('breadth-dn').style.flex = dec/total*2;
+  const volPct = 65+Math.floor(randNorm()*8);
+  document.getElementById('vol-bar').style.width = volPct+'%';
+  document.getElementById('vol-pct').textContent = volPct+'%';
+  const volNum = (1.6+Math.random()*0.4).toFixed(2);
+  document.getElementById('vol-num').textContent = volNum+'B';
+}
+
+function updateClock() {
+  const now = new Date();
+  const etOffset = -4;
+  const et = new Date(now.getTime()+(now.getTimezoneOffset()+etOffset*60)*60000);
+  const h=et.getHours().toString().padStart(2,'0');
+  const m=et.getMinutes().toString().padStart(2,'0');
+  const s=et.getSeconds().toString().padStart(2,'0');
+  document.getElementById('clock').textContent = `${h}:${m}:${s} ET`;
+  const hour=et.getHours(), min=et.getMinutes();
+  const isOpen = (hour>9||(hour===9&&min>=30))&&hour<16;
+  const badge = document.getElementById('session-badge');
+  if(isOpen){badge.textContent='NYSE OPEN';badge.style.color='var(--up)';badge.style.borderColor='rgba(0,214,143,0.4)';}
+  else{badge.textContent='MARKET CLOSED';badge.style.color='var(--text3)';badge.style.borderColor='var(--border)';}
+}
+
+async function fetchNews() {
+  const btn = document.getElementById('refresh-news-btn');
+  const icon = document.getElementById('refresh-icon');
+  const container = document.getElementById('news-container');
+  btn.classList.add('loading');
+  icon.style.display='inline-block';
+  icon.style.animation='spin 0.8s linear infinite';
+  container.innerHTML = '<div class="news-loading"><div class="spinner"></div>Fetching market intelligence via AI...</div>';
+
+  const today = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system:`You are a professional financial news analyst for a day trading terminal. Generate 5 realistic, plausible market news headlines and summaries for today (${today}) relevant to Canadian and US financial markets. These should be believable intraday market developments. Respond with ONLY a JSON array, no markdown, no preamble. Format exactly:
+[{"headline":"...","summary":"...","impact":"HIGH"|"MED"|"LOW","source":"Reuters"|"Bloomberg"|"WSJ"|"BNN Bloomberg","ticker":"AAPL"|"SPX"|"TSX"|null,"minutesAgo":number}]
+Make headlines specific, timely, and market-moving. Mix macro events, earnings, Fed/BOC commentary, commodities, and sector news.`,
+        messages:[{role:'user',content:`Generate 5 current market news items for day trading dashboard. Today is ${today}. Include at least 1 TSX/Canadian stock story, 1 Fed/macro story, 1 earnings/guidance story, 1 commodity story, and 1 sector rotation story. Make them feel like real breaking news.`}]
+      })
+    });
+    const data = await resp.json();
+    const text = data.content[0].text;
+    const cleaned = text.replace(/```json|```/g,'').trim();
+    const news = JSON.parse(cleaned);
+    renderNews(news);
+  } catch(e) {
+    renderFallbackNews();
+  }
+  btn.classList.remove('loading');
+  icon.style.animation='';
+}
+
+function renderNews(items) {
+  const container = document.getElementById('news-container');
+  container.innerHTML = items.map(item=>`
+    <div class="news-item">
+      <div>
+        <span class="news-impact impact-${item.impact.toLowerCase()}">${item.impact} IMPACT</span>
+        ${item.ticker?`<span style="font-family:var(--font-mono);font-size:9px;color:var(--acc);margin-left:6px;padding:2px 5px;background:rgba(61,139,255,0.1);border-radius:2px;">${item.ticker}</span>`:''}
+      </div>
+      <div class="news-headline">${item.headline}</div>
+      <div style="font-size:11px;color:var(--text3);line-height:1.4;margin:3px 0;">${item.summary}</div>
+      <div class="news-meta">
+        <span>${item.source}</span>
+        <span>${item.minutesAgo}m ago</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderFallbackNews() {
+  const container = document.getElementById('news-container');
+  const fallback = [
+    {headline:'Fed officials signal patience on rate cuts amid sticky inflation data',summary:'Multiple FOMC members indicate no urgency to reduce rates given resilient labor market and services inflation remaining above target.',impact:'HIGH',source:'Reuters',ticker:'SPX',minutesAgo:4},
+    {headline:'Royal Bank of Canada beats Q2 estimates, raises dividend guidance',summary:'RY posted EPS of $3.18 vs $2.94 expected, driven by strong wealth management and capital markets revenues.',impact:'HIGH',source:'BNN Bloomberg',ticker:'RY.TO',minutesAgo:12},
+    {headline:'NVIDIA rallies on fresh data center order backlog reports',summary:'Analyst notes suggest H100 and Blackwell chip orders from hyperscalers are accelerating into H2, pushing near-term supply concerns aside.',impact:'MED',source:'Bloomberg',ticker:'NVDA',minutesAgo:23},
+    {headline:'WTI crude edges higher on surprise inventory draw',summary:'EIA data shows a 4.2M barrel draw vs 1.1M expected, supporting energy sector outperformance on the session.',impact:'MED',source:'Reuters',ticker:'XOM',minutesAgo:35},
+    {headline:'TSX Composite holds key 25,000 support amid mixed global sentiment',summary:'Canadian equities showed resilience as energy and financials offset weakness in materials, with the index testing technical support.',impact:'LOW',source:'BNN Bloomberg',ticker:'TSX',minutesAgo:48},
+  ];
+  renderNews(fallback);
+}
+
+document.querySelectorAll('.chart-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{ setChartTab(tab.dataset.sym); updateChart(); });
+});
+
+initPrices();
+renderIndices();
+renderSectors();
+renderKeyLevels();
+renderEconCalendar();
+renderTape();
+updateBreadth();
+updateClock();
+
+setTimeout(()=>{ initChart(); }, 200);
+
+setInterval(()=>{ tickPrices(); renderSectors(); updateBreadth(); renderKeyLevels(); }, 3000);
+setInterval(renderTape, 8000);
+setInterval(updateClock, 1000);
+
+fetchNews();
+</script>
